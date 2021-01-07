@@ -4,8 +4,7 @@
     var title = Model.Title;
     var id = Model.Id;
     var settings = Common.GetSettings(id);
-
-    var visiblePosts = Post.ApplicablePosts.FindAll(p => p.IsVisibleToPublic);
+    var visiblePosts = Post.ApplicablePosts.FindAll(p => p.IsVisibleToPublic && Post.IsAuthorizedRole(p));
     var numberOfPosts = 10;
     var category = "All";
     var author = "All";
@@ -88,7 +87,7 @@
                         {
                         <img src="@item.FirstImgSrc" class="post-item-img" alt="Post image" />
                         }
-                        <h5 class="post-item-title">@item.Title</h5>
+                        <address class="post-item-title">§ @item.Title</address>
                         @if (showDesc)
                         {
                             <p class="post-item-desc">@HttpUtility.HtmlEncode(item.Description)</p>

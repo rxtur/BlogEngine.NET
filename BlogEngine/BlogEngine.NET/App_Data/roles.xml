@@ -14,4 +14,8 @@
     <name>Anonymous</name>
     <users />
   </role>
+  <role>
+    <name>Viewer</name>
+    <users />
+  </role>
 </roles>

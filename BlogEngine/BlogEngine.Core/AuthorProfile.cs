@@ -1,4 +1,7 @@
-﻿namespace BlogEngine.Core
+﻿/// <summary>
+/// Mirrors Profile 
+/// </summary>
+namespace BlogEngine.Core
 {
     using System;
     using System.Collections.Generic;
@@ -12,98 +15,41 @@
     /// </summary>
     public class AuthorProfile : BusinessBase<AuthorProfile, string>
     {
+        private string code;
         #region Constants and Fields
 
-        /// <summary>
-        /// The sync root.
-        /// </summary>
         private static readonly object SyncRoot = new object();
-
-        /// <summary>
-        /// The profiles.
-        /// </summary>
         private static Dictionary<Guid, List<AuthorProfile>> profiles;
-
-        /// <summary>
-        /// The about me.
-        /// </summary>
+        private string zip;
+        private string website;
         private string aboutMe;
-
-        /// <summary>
-        /// The birthday.
-        /// </summary>
+        private string address;
+        private string addressAlt; 
+        private string recordId;
         private DateTime birthday;
-
-        /// <summary>
-        /// The city town.
-        /// </summary>
         private string cityTown;
-
-        /// <summary>
-        /// The company.
-        /// </summary>
         private string company;
-
-        /// <summary>
-        /// The country.
-        /// </summary>
         private string country;
-
-        /// <summary>
-        /// The display name.
-        /// </summary>
         private string displayName;
-
-        /// <summary>
-        /// The email address.
-        /// </summary>
         private string emailAddress;
-
-        /// <summary>
-        /// The first name.
-        /// </summary>
         private string firstName;
-
-        /// <summary>
-        /// The is private.
-        /// </summary>
         private bool isprivate;
-
-        /// <summary>
-        /// The last name.
-        /// </summary>
         private string lastName;
-
-        /// <summary>
-        /// The middle name.
-        /// </summary>
         private string middleName;
-
-        /// <summary>
-        /// The phone fax.
-        /// </summary>
         private string phoneFax;
-
-        /// <summary>
-        /// The phone main.
-        /// </summary>
         private string phoneMain;
-
-        /// <summary>
-        /// The phone mobile.
-        /// </summary>
         private string phoneMobile;
-
-        /// <summary>
-        /// The photo url.
-        /// </summary>
         private string photoUrl;
-
-        /// <summary>
-        /// The region state.
-        /// </summary>
         private string regionState;
-
+        private string userId;
+        private string newsletter;
+        private string otherName;
+        private string organization;
+        private string title;
+        private string spouse;
+        private string workPhone;
+        private string fullName;
+        private string information;
         #endregion
 
         #region Constructors and Destructors
@@ -163,91 +109,50 @@
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets AboutMe.
-        /// </summary>
-        public string AboutMe
+        public string RecordId
         {
             get
             {
-                return this.aboutMe;
+                return this.recordId;
             }
 
             set
             {
-                base.SetValue("AboutMe", value, ref this.aboutMe);
+                base.SetValue("RecordId", value, ref this.recordId);
             }
         }
 
-        /// <summary>
-        /// Gets or sets Birthday.
-        /// </summary>
-        public DateTime Birthday
+        public string UserId
         {
             get
             {
-                return this.birthday;
+                return this.userId;
             }
 
             set
             {
-                base.SetValue("Birthday", value, ref this.birthday);
+                base.SetValue("UserId", value, ref this.userId);
             }
         }
 
-        /// <summary>
-        /// Gets or sets CityTown.
-        /// </summary>
-        public string CityTown
+        public string Information
         {
             get
             {
-                return this.cityTown;
+                return this.information;
             }
-
             set
             {
-                base.SetValue("CityTown", value, ref this.cityTown);
+                base.SetValue("Information", value, ref this.information);
             }
         }
 
-        /// <summary>
-        /// Gets or sets Company.
-        /// </summary>
-        public string Company
+        public string Title
         {
-            get
-            {
-                return this.company;
-            }
-
-            set
-            {
-                base.SetValue("Company", value, ref this.company);
-            }
+            get { return this.title; }
+            set { base.SetValue("Title", value, ref this.title); }
         }
 
-        /// <summary>
-        /// Gets or sets Country.
-        /// </summary>
-        public string Country
-        {
-            get
-            {
-                return this.country;
-            }
-
-            set
-            {
-                base.SetValue("Country", value, ref this.country);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets DisplayName.
-        /// </summary>
         public string DisplayName
         {
             get
@@ -261,25 +166,36 @@
             }
         }
 
-        /// <summary>
-        /// Gets or sets EmailAddress.
-        /// </summary>
-        public string EmailAddress
+        public string UserName
         {
             get
             {
-                return this.emailAddress;
+                return this.Id;
             }
-
             set
             {
-                base.SetValue("EmailAddress", value, ref this.emailAddress);
+                // do nothing;
             }
         }
 
-        /// <summary>
-        /// Gets or sets FirstName.
-        /// </summary>
+        public string FullName
+        {
+            get
+            {
+                return this.fullName;
+            }
+            set
+            {
+                base.SetValue("FullName", value, ref this.fullName);
+            }
+        }
+
+        public string OtherName
+        {
+            get { return this.otherName; }
+            set { base.SetValue("OtherName", value, ref this.otherName); }
+        }
+
         public string FirstName
         {
             get
@@ -293,36 +209,6 @@
             }
         }
 
-        /// <summary>
-        /// Gets FullName.
-        /// </summary>
-        public string FullName
-        {
-            get
-            {
-                return $"{FirstName} {MiddleName} {LastName}".Replace("  ", " ");
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether Private.
-        /// </summary>
-        public bool Private
-        {
-            get
-            {
-                return this.isprivate;
-            }
-
-            set
-            {
-                base.SetValue("Private", value, ref this.isprivate);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets LastName.
-        /// </summary>
         public string LastName
         {
             get
@@ -336,9 +222,6 @@
             }
         }
 
-        /// <summary>
-        /// Gets or sets MiddleName.
-        /// </summary>
         public string MiddleName
         {
             get
@@ -352,57 +235,25 @@
             }
         }
 
-        /// <summary>
-        /// Gets or sets PhoneFax.
-        /// </summary>
-        public string PhoneFax
+        public string Spouse
+        {
+            get { return this.spouse; }
+            set { base.SetValue("Spouse", value, ref this.spouse); }
+        }
+
+        public string AboutMe
         {
             get
             {
-                return this.phoneFax;
+                return this.aboutMe;
             }
 
             set
             {
-                base.SetValue("PhoneFax", value, ref this.phoneFax);
+                base.SetValue("AboutMe", value, ref this.aboutMe);
             }
         }
 
-        /// <summary>
-        /// Gets or sets PhoneMain.
-        /// </summary>
-        public string PhoneMain
-        {
-            get
-            {
-                return this.phoneMain;
-            }
-
-            set
-            {
-                base.SetValue("PhoneMain", value, ref this.phoneMain);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets PhoneMobile.
-        /// </summary>
-        public string PhoneMobile
-        {
-            get
-            {
-                return this.phoneMobile;
-            }
-
-            set
-            {
-                base.SetValue("PhoneMobile", value, ref this.phoneMobile);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets PhotoURL.
-        /// </summary>
         public string PhotoUrl
         {
             get
@@ -416,9 +267,71 @@
             }
         }
 
-        /// <summary>
-        /// Gets or sets RegionState.
-        /// </summary>
+        public DateTime Birthday
+        {
+            get
+            {
+                return this.birthday;
+            }
+
+            set
+            {
+                base.SetValue("Birthday", value, ref this.birthday);
+            }
+        }
+
+        public string EmailAddress
+        {
+            get
+            {
+                return this.emailAddress;
+            }
+
+            set
+            {
+                base.SetValue("EmailAddress", value, ref this.emailAddress);
+            }
+        }
+
+        public string Address
+        {
+            get
+            {
+                return this.address;
+            }
+
+            set
+            {
+                base.SetValue("Address", value, ref this.address);
+            }
+        }
+
+        public string AddressAlt
+        {
+            get
+            {
+                return this.addressAlt;
+            }
+
+            set
+            {
+                base.SetValue("AddressAlt", value, ref this.addressAlt);
+            }
+        }
+
+        public string CityTown
+        {
+            get
+            {
+                return this.cityTown;
+            }
+
+            set
+            {
+                base.SetValue("CityTown", value, ref this.cityTown);
+            }
+        }
+
         public string RegionState
         {
             get
@@ -432,31 +345,132 @@
             }
         }
 
-        /// <summary>
-        /// Gets RelativeLink.
-        /// </summary>
+        public string Zip
+        {
+            get { return this.zip; }
+            set { base.SetValue("Zip", value, ref this.zip); }
+        }
+
+        public string Country
+        {
+            get
+            {
+                return this.country;
+            }
+
+            set
+            {
+                base.SetValue("Country", value, ref this.country);
+            }
+        }
+
+        public string WorkPhone
+        {
+            get { return this.workPhone; }
+            set { base.SetValue("WorkPhone", value, ref this.workPhone); }
+        }
+
+        public string PhoneFax
+        {
+            get
+            {
+                return this.phoneFax;
+            }
+
+            set
+            {
+                base.SetValue("PhoneFax", value, ref this.phoneFax);
+            }
+        }
+
+        public string PhoneMobile
+        {
+            get
+            {
+                return this.phoneMobile;
+            }
+
+            set
+            {
+                base.SetValue("PhoneMobile", value, ref this.phoneMobile);
+            }
+        }
+
+        public string PhoneMain
+        {
+            get
+            {
+                return this.phoneMain;
+            }
+
+            set
+            {
+                base.SetValue("PhoneMain", value, ref this.phoneMain);
+            }
+        }
+
+        public string Company
+        {
+            get
+            {
+                return this.company;
+            }
+
+            set
+            {
+                base.SetValue("Company", value, ref this.company);
+            }
+        }
+
+        public string Organization
+        {
+            get { return this.organization; }
+            set { base.SetValue("Organization", value, ref this.organization); }
+        }
+
+        public string Website
+        {
+            get { return this.website; }
+            set { base.SetValue("Website", value, ref this.website); }
+        }
+
+        public string Newsletter
+        {
+            get { return this.newsletter; }
+            set { base.SetValue("Newsletter", value, ref this.newsletter); }
+        }
+
+        public string Code
+        {
+            get { return this.code; }
+            set { base.SetValue("Code", value, ref this.code); }
+        }
+
+        public bool Private
+        {
+            get
+            {
+                return this.isprivate;
+            }
+
+            set
+            {
+                base.SetValue("Private", value, ref this.isprivate);
+            }
+        }
+
         public string RelativeLink
         {
             get
             {
                 return $"{Utils.RelativeWebRoot}author/{Id}{BlogConfig.FileExtension}";
             }
-        }
-
-        /// <summary>
-        /// Gets UserName.
-        /// </summary>
-        public string UserName
-        {
-            get
+            set
             {
-                return this.Id;
+                // Do nothing
             }
         }
 
-        /// <summary>
-        /// Custom fields
-        /// </summary>
         public Dictionary<String, CustomField> CustomFields
         {
             get
@@ -478,9 +492,120 @@
             }
         }
 
-        #endregion
+        public static Profile GetPopulatedProfile(string id)
+        {
+            if (!String.IsNullOrWhiteSpace(id))
+            {
+                var pf = GetProfile(id);
+                if (pf == null)
+                {
+                    pf = new AuthorProfile(id);
+                    pf.Birthday = DateTime.Parse("01/01/1900");
+                    pf.DisplayName = id;
+                    pf.EmailAddress = Utils.GetUserEmail(id);
+                    pf.FirstName = id;
+                    pf.Private = true;
+                    pf.Save();
+                }
+                var profile = new Profile(pf);
+                return profile;
+            }
+            return null;
+        }
 
-        #region Public Methods
+        public static bool UpdateUserProfile(BlogUser user)
+        {
+            if (user == null || string.IsNullOrEmpty(user.UserName))
+                return false;
+
+            var authorProfile = GetProfile(user.UserName) ?? new AuthorProfile(user.UserName);
+            try
+            {
+                if (user.Profile == null)
+                {
+                    user.Profile = new Profile();
+                    user.Profile.EmailAddress = user.Email;
+                    user.Profile.UserName = user.UserName;
+                }
+
+                var srcProps = user.Profile.GetType().GetProperties();
+                var dstProps = authorProfile.GetType().GetProperties();
+
+                foreach (var source in srcProps)
+                {
+                    var name = source.Name;
+                    var value = source.GetValue(user.Profile);
+
+                    foreach (var dest in dstProps)
+                    {
+                        if (dest.Name == name)
+                        {
+                            switch (dest.PropertyType.Name)
+                            {
+                                case "DateTime":
+                                    DateTime date = DateTime.MinValue;
+                                    if (DateTime.TryParse($"{value}", out date))
+                                        dest.SetValue(authorProfile, date);
+                                    break;
+
+                                case "Boolean":
+                                    dest.SetValue(authorProfile, value);
+                                    break;
+
+                                default:
+                                        dest.SetValue(authorProfile, $"{value}");
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                authorProfile.Save();
+                UpdateProfileImage(authorProfile);
+            }
+            catch (Exception ex)
+            {
+                Utils.Log("Error editing profile", ex);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Update profile image
+        /// </summary>
+        /// <param name="profile"></param>
+        static void UpdateProfileImage(AuthorProfile profile)
+        {
+            var dir = BlogEngine.Core.Providers.BlogService.GetDirectory("/avatars");
+
+            if (string.IsNullOrEmpty(profile.PhotoUrl))
+            {
+                foreach (var f in dir.Files)
+                {
+                    var dot = f.Name.IndexOf(".");
+                    var img = dot > 0 ? f.Name.Substring(0, dot) : f.Name;
+                    if (profile.UserName == img)
+                    {
+                        f.Delete();
+                    }
+                }
+            }
+            else
+            {
+                foreach (var f in dir.Files)
+                {
+                    var dot = f.Name.IndexOf(".");
+                    var img = dot > 0 ? f.Name.Substring(0, dot) : f.Name;
+                    // delete old profile image saved with different name
+                    // for example was admin.jpg and now admin.png
+                    if (profile.UserName == img && f.Name != profile.PhotoUrl.Replace("\"", ""))
+                    {
+                        f.Delete();
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the profile.
@@ -516,56 +641,6 @@
         }
 
         /// <summary>
-        /// Returns the author profile as a JsonProfile object for json serialization.
-        /// </summary>
-        /// <param name="username"></param>
-        /// <returns></returns>
-        public static Profile ToJson(string username)
-        {
-            var j = new Profile();
-            var p = Profiles.Find(ap => ap.UserName.Equals(username, StringComparison.OrdinalIgnoreCase));
-
-            if (p != null)
-            {
-                j.AboutMe = string.IsNullOrEmpty(p.AboutMe) ? "" : p.aboutMe;
-                j.Birthday = p.Birthday.ToShortDateString();
-                j.CityTown = string.IsNullOrEmpty(p.CityTown) ? "" : p.CityTown;
-                j.Country = string.IsNullOrEmpty(p.Country) ? "" : p.Country;
-                j.DisplayName = p.DisplayName;
-                j.EmailAddress = p.EmailAddress;
-                j.PhoneFax = string.IsNullOrEmpty(p.PhoneFax) ? "" : p.PhoneFax;
-                j.FirstName = string.IsNullOrEmpty(p.FirstName) ? "" : p.FirstName;
-                j.Private = p.Private;
-                j.LastName = string.IsNullOrEmpty(p.LastName) ? "" : p.LastName;
-                j.MiddleName = string.IsNullOrEmpty(p.MiddleName) ? "" : p.MiddleName;
-                j.PhoneMobile = string.IsNullOrEmpty(p.PhoneMobile) ? "" : p.PhoneMobile;
-                j.PhoneMain = string.IsNullOrEmpty(p.PhoneMain) ? "" : p.PhoneMain;
-                j.PhotoUrl = string.IsNullOrEmpty(p.PhotoUrl) ? "" : p.PhotoUrl;
-                j.RegionState = string.IsNullOrEmpty(p.RegionState) ? "" : p.RegionState;
-            }
-            else
-            {
-                j.AboutMe = "";
-                j.Birthday = "01/01/1900";
-                j.CityTown = "";
-                j.Country = "";
-                j.DisplayName = username;
-                j.EmailAddress = Utils.GetUserEmail(username);
-                j.PhoneFax = "";
-                j.FirstName = username;
-                j.Private = true;
-                j.LastName = "";
-                j.MiddleName = "";
-                j.PhoneMobile = "";
-                j.PhoneMain = "";
-                j.PhotoUrl = "";
-                j.RegionState = "";
-            }
-
-            return j;
-        }
-
-        /// <summary>
         /// Removes profile for a specific blog
         /// </summary>
         /// <param name="blogId">Blog ID</param>
@@ -573,10 +648,6 @@
         {
             profiles.Remove(blogId);
         }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Datas the delete.
@@ -632,6 +703,5 @@
                 string.IsNullOrEmpty(this.Id));
         }
 
-        #endregion
     }
 }

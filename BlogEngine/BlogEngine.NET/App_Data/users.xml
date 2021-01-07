@@ -2,7 +2,15 @@
   <User>
     <UserName>Admin</UserName>
     <Password>jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=</Password>
-    <Email>post@example.com</Email>
+    <Email>email@mysite.com</Email>
     <LastLoginTime>2007-12-05 20:46:40</LastLoginTime>
+  </User>
+  <User>
+    <UserName>
+    </UserName>
+    <Password>47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=</Password>
+    <Email>
+    </Email>
+    <LastLoginTime>2018-09-01 07:13:10</LastLoginTime>
   </User>
 </Users>

@@ -1,17 +1,25 @@
 ﻿namespace BlogEngine.Core.Providers
 {
+    using BlogEngine.Core.Data.Contracts;
+    using Models=BlogEngine.Core.Data.Models;
+    using Newtonsoft.Json.Linq;
     using System;
+    using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.Configuration;
     using System.Configuration.Provider;
+    using System.Data.Common;
+    using System.Diagnostics;
+    using System.Text;
     using System.Web.Security;
 
     /// <summary>
     /// Generic Db Membership Provider
     /// </summary>
-    public class DbMembershipProvider : MembershipProvider
+    public class DbMembershipProvider : MembershipProvider, IMembershipProvider
     {
-        #region Constants and Fields
+        public const string MAIN_QUERY = "SELECT username, EmailAddress, lastLoginTime, Comment FROM {0}Users ";
+        #region Fields
 
         /// <summary>
         /// The application name.
@@ -171,6 +179,12 @@
 
         #endregion
 
+        private string GetMainQuery()
+        {
+            var retValue = string.Format(MAIN_QUERY, tablePrefix);
+            return retValue;
+        }
+
         #region Public Methods
 
         /// <summary>
@@ -189,7 +203,9 @@
             {
                 if (conn.HasConnection)
                 {
-                    using (var cmd = conn.CreateTextCommand(string.Format("SELECT password FROM {0}Users WHERE BlogID = {1}blogid AND userName = {1}name", this.tablePrefix, this.parmPrefix)))
+                    using (var cmd = conn.CreateTextCommand(string.Format(
+                        "SELECT password FROM {0}Users WHERE BlogID = {1}blogid AND userName = {1}name", 
+                        this.tablePrefix, this.parmPrefix)))
                     {
                         // Check Old Password
 
@@ -229,9 +245,14 @@
                         // Update New Password
                         if (oldPasswordCorrect)
                         {
-                            cmd.CommandText = string.Format("UPDATE {0}Users SET password = {1}pwd WHERE BlogID = {1}blogid AND userName = {1}name", this.tablePrefix, this.parmPrefix);
+                            cmd.CommandText = string.Format(
+                                "UPDATE {0}Users SET password = {1}pwd WHERE BlogID = {1}blogid AND userName = {1}name", 
+                                this.tablePrefix, this.parmPrefix);
 
-                            cmd.Parameters.Add(conn.CreateParameter(FormatParamName("pwd"), (this.passwordFormat == MembershipPasswordFormat.Hashed ? Utils.HashPassword(newPassword) : newPassword)));
+                            cmd.Parameters.Add(conn.CreateParameter(FormatParamName("pwd"), 
+                                (this.passwordFormat == MembershipPasswordFormat.Hashed 
+                                    ? Utils.HashPassword(newPassword) 
+                                    : newPassword)));
 
                             cmd.ExecuteNonQuery();
                             success = true;
@@ -286,7 +307,11 @@
             {
                 if (conn.HasConnection)
                 {
-                    var sqlQuery = string.Format("INSERT INTO {0}Users (blogId, userName, password, emailAddress, lastLoginTime) VALUES ({1}blogid, {1}name, {1}pwd, {1}email, {1}login)", this.tablePrefix, this.parmPrefix);
+                    var sqlQuery = string.Format(
+                        "INSERT INTO {0}Users (blogId, userName, password, emailAddress, lastLoginTime) "+
+                                   "VALUES ({1}blogid, {1}name, {1}pwd, {1}email, {1}login)", 
+                        this.tablePrefix, this.parmPrefix);
+
                     using (var cmd = conn.CreateTextCommand(sqlQuery))
                     {
 
@@ -302,7 +327,7 @@
                 }
             }
 
-            MembershipUser user = this.GetMembershipUser(username, email, DateTime.Now);
+            MembershipUser user = this.GetMembershipUser(username, username, email, DateTime.Now);
             status = MembershipCreateStatus.Success;
 
             return user;
@@ -322,11 +347,36 @@
             {
                 if (conn.HasConnection)
                 {
-                    using (var cmd = conn.CreateTextCommand(string.Format("DELETE FROM {0}Users WHERE blogId = {1}blogid AND userName = {1}name", this.tablePrefix, this.parmPrefix)))
+                    using (var cmd = conn.CreateTextCommand(string.Format(
+                        "DELETE FROM {0}Users WHERE blogId = {1}blogid AND userName = {1}name", 
+                        this.tablePrefix, this.parmPrefix)))
                     {
                         cmd.Parameters.Add(conn.CreateParameter(FormatParamName("blogid"), Blog.CurrentInstance.Id.ToString()));
                         cmd.Parameters.Add(conn.CreateParameter(FormatParamName("name"), username));
 
+                        try
+                        {
+                            cmd.ExecuteNonQuery();
+                            success = true;
+                        }
+                        catch (Exception)
+                        {
+                            success = false;
+                            throw;
+                        }
+                    }
+                }
+            }
+
+            using (var conn = this.CreateConnection())
+            {
+                if (conn.HasConnection)
+                {
+                    using (var cmd = conn.CreateTextCommand(string.Format(
+                        "DELETE FROM Contact WHERE userName = {0}name",
+                        this.parmPrefix)))
+                    {
+                        cmd.Parameters.Add(conn.CreateParameter(FormatParamName("name"), username));
                         try
                         {
                             cmd.ExecuteNonQuery();
@@ -376,6 +426,74 @@
             throw new NotImplementedException();
         }
 
+        public MembershipUserCollection GetAllUsers(
+            int pageIndex, int pageSize, out int totalRecords, string process)
+        {
+            if (process != "contacts")
+            {
+                return GetAllUsers(pageIndex, pageSize, out totalRecords);
+            }
+
+            //var user = new MembershipUser(
+            //    this.Name,      // Provider name
+            //    userName,       // Username
+            //    userName,       // providerUserKey
+            //    email,          // Email
+            //    string.Empty,   // passwordQuestion
+            //    comment,        // Comment
+            //    true,           // approved
+            //    false,          // isLockedOut
+            //    DateTime.Now,   // creationDate
+            //    lastLogin,      // lastLoginDate
+            //    DateTime.Now,   // lastActivityDate
+            //    DateTime.Now,   // lastPasswordChangedDate
+            //    new DateTime(1980, 1, 1)); // lastLockoutDate
+
+            var users = new MembershipUserCollection();
+
+            using (var conn = this.CreateConnection())
+            {
+                if (conn.HasConnection)
+                {
+                    using (var cmd = conn.CreateTextCommand("SELECT DISTINCT * FROM [Contact] FOR JSON AUTO"))
+                    {
+                        var jsonResult = new StringBuilder();
+                        var reader = cmd.ExecuteReader();
+                        if (!reader.HasRows)
+                        {
+                            jsonResult.Append("[]");
+                        }
+                        else
+                        {
+                            // Build a string from the reader results
+                            while (reader.Read())
+                                jsonResult.Append(reader.GetValue(0).ToString());
+                        }
+                        JArray jsonResultList = JArray.Parse(jsonResult.ToString());
+                        foreach (var record in jsonResultList)
+                        {
+                            try
+                            { 
+                                users.Add(GetMembershipUser(
+                                    record["Name"].ToString(),
+                                    record["Name"].ToString(),
+                                    record["EmailAddress"].ToString(),
+                                    DateTime.Now,
+                                    record.ToString()));
+                            }catch(Exception ex)
+                            {
+                                Debug.WriteLine(record);
+                            }
+                        }
+                    }
+                }
+            }
+            totalRecords = users.Count;
+            return users;
+        }
+
+
+
         /// <summary>
         /// Return all users in MembershipUserCollection
         /// </summary>
@@ -388,6 +506,7 @@
         public override MembershipUserCollection GetAllUsers(int pageIndex, int pageSize, out int totalRecords)
         {
             var users = new MembershipUserCollection();
+            var mainQuery = GetMainQuery();
 
             using (var conn = this.CreateConnection())
             {
@@ -395,20 +514,21 @@
                 {
                     if (Blog.CurrentInstance.IsSiteAggregation)
                     {
-                        using (var cmd = conn.CreateTextCommand($"SELECT username, EmailAddress, lastLoginTime FROM {tablePrefix}Users "))
+                        using (var cmd = conn.CreateTextCommand(mainQuery))
                         {
                             using (var rdr = cmd.ExecuteReader())
                             {
                                 while (rdr.Read())
                                 {
-                                    users.Add(this.GetMembershipUser(rdr.GetString(0), rdr.GetString(1), rdr.GetDateTime(2)));
+                                    var user = ProcessMainQuery(rdr);
+                                    users.Add(user);
                                 }
                             }
                         }
                     }
                     else
                     {
-                        using (var cmd = conn.CreateTextCommand($"SELECT username, EmailAddress, lastLoginTime FROM {tablePrefix}Users WHERE BlogID = {parmPrefix}blogid "))
+                        using (var cmd = conn.CreateTextCommand(mainQuery + $" WHERE BlogID = {parmPrefix}blogid "))
                         {
                             cmd.Parameters.Add(conn.CreateParameter(FormatParamName("blogid"), Blog.CurrentInstance.Id.ToString()));
 
@@ -416,7 +536,14 @@
                             {
                                 while (rdr.Read())
                                 {
-                                    users.Add(this.GetMembershipUser(rdr.GetString(0), rdr.GetString(1), rdr.GetDateTime(2)));
+                                    var user = ProcessMainQuery(rdr);
+                                    try
+                                    {
+                                        users.Add(user);
+                                    }catch(Exception ex)
+                                    {
+                                        Debug.WriteLine($"{ex.Message}{ex.StackTrace}");
+                                    }
                                 }
                             }
                         }
@@ -427,6 +554,7 @@
             totalRecords = users.Count;
             return users;
         }
+
 
         /// <summary>
         /// Not implemented
@@ -474,12 +602,16 @@
         public override MembershipUser GetUser(string username, bool userIsOnline)
         {
             MembershipUser user = null;
+            var mainQuery = GetMainQuery();
 
             using (var conn = this.CreateConnection())
             {
                 if (conn.HasConnection)
                 {
-                    using (var cmd = conn.CreateTextCommand(string.Format("SELECT username, EmailAddress, lastLoginTime FROM {0}Users WHERE BlogID = {1}blogid AND UserName = {1}name", this.tablePrefix, this.parmPrefix)))
+                    using (var cmd = conn.CreateTextCommand(
+                        string.Format(
+                            mainQuery + " WHERE BlogID = {1}blogid AND UserName = {1}name", 
+                            this.tablePrefix, this.parmPrefix)))
                     {
                         cmd.Parameters.Add(conn.CreateParameter(FormatParamName("blogid"), Blog.CurrentInstance.Id.ToString()));
                         cmd.Parameters.Add(conn.CreateParameter(FormatParamName("name"), username));
@@ -488,15 +620,63 @@
                         {
                             if (rdr.Read())
                             {
-                                user = this.GetMembershipUser(username, rdr.GetString(1), rdr.GetDateTime(2));
+                                user = ProcessMainQuery(rdr);
                             }
                         }
                     }
                 }
             }
-
             return user;
         }
+        #region Code
+
+        private MembershipUser ProcessMainQuery(DbDataReader rdr)
+        {
+            var dataUserName = rdr.GetString(0);
+            var dataUserEmail = rdr.GetString(1);
+            var dataLastLogin = rdr.GetDateTime(2);
+            var dataComment = rdr.IsDBNull(3) ? null : rdr.GetString(3);
+
+            var user = this.GetMembershipUser(dataUserName, dataUserName, dataUserEmail, dataLastLogin, dataComment);
+            return user;
+        }
+
+        /// <summary>
+        /// Gets membership user.
+        /// </summary>
+        /// <param name="userName">
+        /// The user name.
+        /// </param>
+        /// <param name="email">
+        /// The email.
+        /// </param>
+        /// <param name="lastLogin">
+        /// The last login.
+        /// </param>
+        /// <returns>
+        /// A MembershipUser.
+        /// </returns>
+        private MembershipUser GetMembershipUser(string userName, string providerUserKey, string email, DateTime lastLogin, string comment = null)
+        {
+            comment = comment ?? string.Empty;
+
+            var user = new MembershipUser(
+                this.Name,                      // Provider name
+                userName.Replace(",", ""),       // Username
+                providerUserKey,                // providerUserKey
+                email,                          // Email
+                string.Empty,                   // passwordQuestion
+                comment,                        // Comment
+                true,                           // approved
+                false,                          // isLockedOut
+                DateTime.Now,                   // creationDate
+                lastLogin,                      // lastLoginDate
+                DateTime.Now,                   // lastActivityDate
+                DateTime.Now,                   // lastPasswordChangedDate
+                new DateTime(1980, 1, 1));      // lastLockoutDate
+            return user;
+        }
+
 
         /// <summary>
         /// Gets the user name associated with the specified e-mail address.
@@ -518,7 +698,9 @@
             {
                 if (conn.HasConnection)
                 {
-                    using (var cmd = conn.CreateTextCommand(string.Format("SELECT userName FROM {0}Users WHERE BlogID = {1}blogid AND emailAddress = {1}email", this.tablePrefix, this.parmPrefix)))
+                    using (var cmd = conn.CreateTextCommand(string.Format(
+                        "SELECT userName FROM {0}Users WHERE BlogID = {1}blogid AND emailAddress = {1}email", 
+                        this.tablePrefix, this.parmPrefix)))
                     {
                         cmd.Parameters.Add(conn.CreateParameter(FormatParamName("blogid"), Blog.CurrentInstance.Id.ToString()));
                         cmd.Parameters.Add(conn.CreateParameter(FormatParamName("email"), email));
@@ -662,7 +844,9 @@
                 if (conn.HasConnection)
                 {
 
-                    using (var cmd = conn.CreateTextCommand(string.Format("SELECT password FROM {0}Users WHERE BlogID = {1}blogid AND userName = {1}name", this.tablePrefix, this.parmPrefix)))
+                    using (var cmd = conn.CreateTextCommand(string.Format(
+                        "SELECT password FROM {0}Users WHERE BlogID = {1}blogid AND userName = {1}name", 
+                        this.tablePrefix, this.parmPrefix)))
                     {
                         // Check Old Password
 
@@ -680,9 +864,14 @@
                         // Update Password
                         if (!string.IsNullOrEmpty(oldPassword))
                         {
-                            cmd.CommandText = string.Format("UPDATE {0}Users SET password = {1}pwd WHERE BlogID = {1}blogid AND userName = {1}name", this.tablePrefix, this.parmPrefix);
+                            cmd.CommandText = string.Format(
+                                "UPDATE {0}Users SET password = {1}pwd WHERE BlogID = {1}blogid AND userName = {1}name", 
+                                this.tablePrefix, this.parmPrefix);
 
-                            cmd.Parameters.Add(conn.CreateParameter(FormatParamName("pwd"), (this.passwordFormat == MembershipPasswordFormat.Hashed ? Utils.HashPassword(randomPassword) : randomPassword)));
+                            cmd.Parameters.Add(conn.CreateParameter(FormatParamName("pwd"), 
+                                (this.passwordFormat == MembershipPasswordFormat.Hashed 
+                                    ? Utils.HashPassword(randomPassword) 
+                                    : randomPassword)));
 
                             cmd.ExecuteNonQuery();
                             return randomPassword;
@@ -703,26 +892,157 @@
         {
             throw new NotImplementedException();
         }
-
+        #endregion 
         /// <summary>
         /// Update User Data (not password)
         /// </summary>
         /// <param name="user">A <see cref="T:System.Web.Security.MembershipUser"/> object that represents the user to update and the updated information for the user.</param>
         public override void UpdateUser(MembershipUser user)
         {
+            var profile = new Models.Profile(user.Comment);
+            var userName = profile.UserName;                // store for query
+            var displayName = profile.DisplayName;          // name that should be used
+
+            if (string.IsNullOrEmpty(displayName))          // Happens if creating new record
+            {
+                profile.DisplayName = userName;
+                displayName = userName;
+            }
+
+            // If the display name does not equal the user name then we have to sync them
+            // before we continue processing.
+            if (profile.DisplayName != profile.UserName)
+            {
+                profile.UserName = profile.DisplayName;      // update for new name
+                user.Comment = Utils.ConvertToJson(profile); // Update user comment
+
+                using (var conn = this.CreateConnection())
+                {
+                    if (conn.HasConnection)
+                    {
+                        using (var cmd = conn.CreateTextCommand(
+                            string.Format(
+                                "UPDATE {0}Users SET " +
+                                "UserName = {1}displayName, " +
+                                "Comment = {1}comment " +
+                                "WHERE BlogId = {1}blogId AND userName = {1}name",
+                                this.tablePrefix, this.parmPrefix)))
+                        {
+                            var parms = cmd.Parameters;
+                            parms.Add(conn.CreateParameter(FormatParamName("blogid"), Blog.CurrentInstance.Id.ToString()));
+                            parms.Add(conn.CreateParameter(FormatParamName("displayName"), profile.DisplayName));
+                            parms.Add(conn.CreateParameter(FormatParamName("name"), userName));
+                            parms.Add(conn.CreateParameter(FormatParamName("comment"), user.Comment));
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+
+            // The above logic was wedged in to ensure display and user names are in sync - the following
+            // code is what normally fires here
             using (var conn = this.CreateConnection())
             {
                 if (conn.HasConnection)
                 {
-                    using (var cmd = conn.CreateTextCommand(string.Format("UPDATE {0}Users SET emailAddress = {1}email WHERE BlogId = {1}blogId AND userName = {1}name", this.tablePrefix, this.parmPrefix)))
+                    using (var cmd = conn.CreateTextCommand(
+                        string.Format(
+                            "UPDATE {0}Users SET " +
+                            "emailAddress = {1}email, " +
+                            "Comment = {1}comment " +
+                            "WHERE BlogId = {1}blogId AND userName = {1}name", 
+                            this.tablePrefix, this.parmPrefix)))
                     {
                         var parms = cmd.Parameters;
                         parms.Add(conn.CreateParameter(FormatParamName("blogid"), Blog.CurrentInstance.Id.ToString()));
-                        parms.Add(conn.CreateParameter(FormatParamName("name"), user.UserName));
+                        parms.Add(conn.CreateParameter(FormatParamName("name"), displayName));
                         parms.Add(conn.CreateParameter(FormatParamName("email"), user.Email));
+                        parms.Add(conn.CreateParameter(FormatParamName("comment"), user.Comment));
 
                         cmd.ExecuteNonQuery();
                     }
+                }
+            }
+            UpdateContacts(user);
+        }
+
+        // TODO: add parameters and save
+
+        public void UpdateContacts(MembershipUser user)
+        {
+            var mappedFields = new Dictionary<string,string>();
+            var profile = new Models.Profile(user.Comment);
+
+            // If a new record is being created this will be blank
+            if (string.IsNullOrEmpty(profile.DisplayName))
+                profile.DisplayName = profile.UserName;
+
+            // The user name must equal the display name (the editable field on the form) - this is an
+            // integration hack so that we can use the contacts and users table 
+            profile.UserName = profile.DisplayName;
+
+            // If there is no record ID then create a new guid and insert it for the update to use
+            if (string.IsNullOrEmpty(profile.RecordId))
+            {
+                profile.RecordId = Guid.NewGuid().ToString();
+                using (var conn = this.CreateConnection())
+                {
+                    using (var cmd = conn.CreateTextCommand(
+                        string.Format(
+                            "INSERT INTO Contact (RecordId, Name) values ({0}RecordId, {0}Name)",
+                            this.parmPrefix)))
+                    {
+                        var parms = cmd.Parameters;
+                        parms.Add(conn.CreateParameter(FormatParamName("RecordId"), profile.RecordId));
+                        parms.Add(conn.CreateParameter(FormatParamName("Name"), profile.UserName));
+                        var result = cmd.ExecuteNonQuery();
+                    }
+                }
+
+                user.Comment = Utils.ConvertToJson(profile);
+                UpdateUser(user); // Recursive but  record Id will be set now so we won't hit again
+                return;
+            }
+
+
+            var paraList = new List<string>();
+            var profProps = profile.GetType().GetProperties();
+
+            foreach (var prop in profProps)
+            {
+                var sourceField = prop.Name;
+                var destField = prop.Name;
+
+                if (mappedFields.ContainsKey(destField))
+                    destField = mappedFields[sourceField];
+
+                if (destField == null)
+                    continue;
+
+                paraList.Add($"{destField} = {{1}}{sourceField}");
+            }
+
+            var parameters = string.Join(", ", paraList);
+
+            // Ensure name remains in sync with user name (it will be display name on queries)
+            var sqlString = "UPDATE Contact SET " + parameters + ", name={1}displayName WHERE RecordId = {1}RecordId";
+            var commandText = string.Format(sqlString, this.tablePrefix, this.parmPrefix);
+
+            using (var conn = this.CreateConnection())
+            {
+                using(var cmd = conn.CreateTextCommand(commandText))
+                {
+                    var parms = cmd.Parameters;
+                    foreach (var prop in profProps)
+                    {
+                        var name = FormatParamName(prop.Name);
+                        var value = prop.GetValue(profile) ?? "";
+
+                        parms.Add(conn.CreateParameter(name, value));
+                    }
+                    parms.Add(conn.CreateParameter(FormatParamName("name"), profile.UserName));
+
+                    cmd.ExecuteNonQuery();
                 }
             }
         }
@@ -741,7 +1061,9 @@
             {
                 if (conn.HasConnection)
                 {
-                    using (var cmd = conn.CreateTextCommand(string.Format("SELECT password FROM {0}Users WHERE BlogID = {1}blogid AND UserName = {1}name", this.tablePrefix, this.parmPrefix)))
+                    using (var cmd = conn.CreateTextCommand(string.Format(
+                        "SELECT password FROM {0}Users WHERE BlogID = {1}blogid AND UserName = {1}name", 
+                        this.tablePrefix, this.parmPrefix)))
                     {
                         cmd.Parameters.Add(conn.CreateParameter(FormatParamName("blogid"), Blog.CurrentInstance.Id.ToString()));
                         cmd.Parameters.Add(conn.CreateParameter(FormatParamName("name"), username));
@@ -789,6 +1111,7 @@
 
         private DbConnectionHelper CreateConnection()
         {
+            var appsettings = ConfigurationManager.AppSettings;
             var settings = ConfigurationManager.ConnectionStrings[this.connStringName];
             return new DbConnectionHelper(settings);
         }
@@ -804,39 +1127,7 @@
             return $"{parmPrefix}{parameterName}";
         }
 
-        /// <summary>
-        /// Gets membership user.
-        /// </summary>
-        /// <param name="userName">
-        /// The user name.
-        /// </param>
-        /// <param name="email">
-        /// The email.
-        /// </param>
-        /// <param name="lastLogin">
-        /// The last login.
-        /// </param>
-        /// <returns>
-        /// A MembershipUser.
-        /// </returns>
-        private MembershipUser GetMembershipUser(string userName, string email, DateTime lastLogin)
-        {
-            var user = new MembershipUser(
-                this.Name, // Provider name
-                userName, // Username
-                userName, // providerUserKey
-                email, // Email
-                string.Empty, // passwordQuestion
-                string.Empty, // Comment
-                true, // approved
-                false, // isLockedOut
-                DateTime.Now, // creationDate
-                lastLogin, // lastLoginDate
-                DateTime.Now, // lastActivityDate
-                DateTime.Now, // lastPasswordChangedDate
-                new DateTime(1980, 1, 1)); // lastLockoutDate
-            return user;
-        }
+
 
         #endregion
     }

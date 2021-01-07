@@ -23,6 +23,8 @@
         .when("/security/profile", { templateUrl: "app/security/profile/profileView.html" })
         .when("/security/roles", { templateUrl: "app/security/roles/roleView.html" })
         .when("/security/users", { templateUrl: "app/security/users/userView.html" })
+        .when("/security/contacts", { templateUrl: "app/security/contacts/contactView.html" })
+        
 
         .when("/settings/basic", { templateUrl: "app/settings/basicView.html" })
         .when("/settings/feed", { templateUrl: "app/settings/feedView.html" })
@@ -194,7 +196,7 @@
 
         // blogs
         this.showTabBlogs = showTabBlogs();
-        function showTabBlogs() { return (SiteVars.IsPrimary == "True" && UserVars.IsAdmin == "True") ? true : false; }
+        function showTabBlogs() { return (SiteVars.IsPrimary === "True" && UserVars.IsAdmin === "True") ? true : false; }
 
         // content
         this.showTabContent = showTabContent();
@@ -223,8 +225,10 @@
         this.canManageUsers = canManageUsers();
         this.canManageRoles = canManageRoles();
         this.canManageProfile = canManageProfile();
+        this.canEditUserRoles = canEditUserRoles();
 
         function showTabUsers() { return (UserVars.Rights.indexOf("EditOtherUsers") > -1) ? true : false; }
+        function canEditUserRoles() { return (UserVars.Rights.indexOf("EditOtherUsersRoles") > -1) ? true : false; }
         function canManageUsers() { return UserVars.Rights.indexOf("EditOtherUsers") > -1 ? true : false; }
         function canManageRoles() { return UserVars.Rights.indexOf("EditRoles") > -1 ? true : false; }
         function canManageProfile() { return UserVars.Rights.indexOf("EditOwnUser") > -1 ? true : false; }

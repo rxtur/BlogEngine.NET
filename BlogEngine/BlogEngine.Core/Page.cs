@@ -69,6 +69,11 @@
         private string title;
 
         /// <summary>
+        /// The _ author.
+        /// </summary>
+        private string author;
+
+        /// <summary>
         /// The front page.
         /// </summary>
         private bool frontPage;
@@ -424,6 +429,22 @@
         }
 
         /// <summary>
+        ///     Gets or sets the Author or the object.
+        /// </summary>
+        public string Author
+        {
+            get
+            {
+                return this.author;
+            }
+
+            set
+            {
+                base.SetValue("Author", value, ref this.author);
+            }
+        }
+
+        /// <summary>
         ///     Gets a value indicating whether or not this page should be shown
         /// </summary>
         /// <value></value>
@@ -433,8 +454,13 @@
             {
                 if (this.isDeleted)
                     return false;
+
+                else if (!Security.IsInRole(this))
+                    return false;
+
                 else if (this.IsPublished)
                     return true;
+
                 else if (Security.IsAuthorizedTo(Rights.ViewUnpublishedPages))
                     return true;
 

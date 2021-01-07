@@ -252,6 +252,17 @@
             }
         }
 
+        protected static bool HasRoleAccess(BlogEngine.Core.Post p)
+        {
+            if (p.CustomFields != null && p.CustomFields.ContainsKey("Role"))
+            {
+                var customField = p.CustomFields["Role"];
+                var returnValue = Security.GetCurrentUserRoles().ToList().Contains(customField.Value);
+                return returnValue;
+            }
+            return true;
+        }
+
         /// <summary>
         ///     Gets a sorted collection of all undeleted posts across all blogs.
         ///     Sorted by date.
@@ -321,6 +332,12 @@
                 else
                     return Posts;
             }
+        }
+
+        public static bool IsAuthorizedRole(Post post)
+        {
+            var returnValue = HasRoleAccess(post);
+            return returnValue;
         }
 
         /// <summary>
@@ -672,8 +689,13 @@
             {
                 if (this.IsDeleted)
                     return false;
+
+                else if (!Security.IsInRole(this))
+                    return false;
+
                 else if (this.IsPublished && this.DateCreated <= BlogSettings.Instance.FromUtc())
                     return true;
+
                 else if (Security.IsAuthorizedTo(Rights.ViewUnpublishedPosts))
                     return true;
 
@@ -1612,7 +1634,8 @@
             var updateAndPublish = false;
             try
             {
-                var isOldPublished = BlogService.SelectPost(Id).IsPublished;
+                var post = BlogService.SelectPost(Id);
+                var isOldPublished = post.IsPublished;
                 if(isPublished && !isOldPublished && !isDeleted)
                 {
                     updateAndPublish = true;

@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<settings>
+  <contactformmessage>&lt;p&gt;I'll answer the mail as soon as I can.&lt;/p&gt;</contactformmessage>
+  <securityvalidationkey>75159fc419124fbeb9507abf68f8a5037ef6234100cd48848f8330f9cb695b4879e5cd525235477aa199908ec1227785</securityvalidationkey>
+  <commentsperpage>10</commentsperpage>
+  <language>en-US</language>
+  <theme>ContactManager</theme>
+  <geocodinglongitude>0</geocodinglongitude>
+  <enablerating>True</enablerating>
+  <themecookiename>theme</themecookiename>
+  <trustauthenticatedusers>True</trustauthenticatedusers>
+  <moderationtype>Auto</moderationtype>
+  <enablerecaptchaoncontactform>False</enablerecaptchaoncontactform>
+  <culture>Auto</culture>
+  <compresswebresource>False</compresswebresource>
+  <searchcommentlabeltext>Include comments in search</searchcommentlabeltext>
+  <timestamppostlinks>False</timestamppostlinks>
+  <emailsubjectprefix>Weblog</emailsubjectprefix>
+  <enablewebsiteincomments>False</enablewebsiteincomments>
+  <selfregistrationinitialrole>Select</selfregistrationinitialrole>
+  <pageoptionsdescription>False</pageoptionsdescription>
+  <showdescriptioninpostlistforpostsbytagorcategory>False</showdescriptioninpostlistforpostsbytagorcategory>
+  <postsperfeed>10</postsperfeed>
+  <useblognameinpagetitles>True</useblognameinpagetitles>
+  <enabletrackbacksend>True</enabletrackbacksend>
+  <descriptioncharacters>300</descriptioncharacters>
+  <postoptionsdescription>False</postoptionsdescription>
+  <pageoptionscustomfields>False</pageoptionscustomfields>
+  <customfrontpage />
+  <postoptionsauthors>False</postoptionsauthors>
+  <smtpusername>username</smtpusername>
+  <alternatefeedurl />
+  <contacterrormessage>&lt;p&gt;This form does not work at the moment. Sorry for the inconvenience.&lt;/p&gt;</contacterrormessage>
+  <enablecontactattachments>True</enablecontactattachments>
+  <sendmailoncomment>True</sendmailoncomment>
+  <createblogonselfregistration>False</createblogonselfregistration>
+  <contactthankmessage>&lt;h1&gt;Thank you&lt;/h1&gt;&lt;p&gt;The message was sent.&lt;/p&gt;</contactthankmessage>
+  <enablecommentsmoderation>True</enablecommentsmoderation>
+  <commentreportmistakes>False</commentreportmistakes>
+  <requiresslmetaweblogapi>False</requiresslmetaweblogapi>
+  <enablessl>False</enablessl>
+  <allowservertodownloadremotefiles>True</allowservertodownloadremotefiles>
+  <israzortheme>False</israzortheme>
+  <blogrollvisibleposts>3</blogrollvisibleposts>
+  <iscommentsenabled>True</iscommentsenabled>
+  <descriptioncharactersforpostsbytagorcategory>0</descriptioncharactersforpostsbytagorcategory>
+  <showincludecommentsoption>False</showincludecommentsoption>
+  <disqusdevmode>False</disqusdevmode>
+  <enableenclosures>False</enableenclosures>
+  <email>name@example.com</email>
+  <feedauthor />
+  <enablecountryincomments>False</enablecountryincomments>
+  <errortext>
+    &lt;p&gt;This one's down to me!&lt;br /&gt; Please accept my apologies for this - I'll see to it
+    that the developer responsible for this happening is given 20 lashes
+    (but only after he or she has fixed this problem).&lt;/p&gt;
+  </errortext>
+  <remotefiledownloadtimeout>30000</remotefiledownloadtimeout>
+  <enableselfregistration>False</enableselfregistration>
+  <remotemaxfilesize>524288</remotemaxfilesize>
+  <enabletrackbackreceive>True</enabletrackbackreceive>
+  <enabletagexport>False</enabletagexport>
+  <enablecommentsearch>True</enablecommentsearch>
+  <commentprovider>BlogEngine</commentprovider>
+  <postsperpage>10</postsperpage>
+  <showlivepreview>True</showlivepreview>
+  <showpostnavigation>True</showpostnavigation>
+  <errortitle>Ooops! An unexpected error has occurred.</errortitle>
+  <timezoneid />
+  <disqusaddcommentstopages>False</disqusaddcommentstopages>
+  <blogrollmaxlength>23</blogrollmaxlength>
+  <facebooklanguage />
+  <enableopensearch>True</enableopensearch>
+  <pageoptionsslug>False</pageoptionsslug>
+  <syndicationformat>Rss</syndicationformat>
+  <description>Short description of the blog</description>
+  <dayscommentsareenabled>0</dayscommentsareenabled>
+  <enablerelatedposts>True</enablerelatedposts>
+  <authorname>My name</authorname>
+  <trackingscript />
+  <pageoptionsauthors>False</pageoptionsauthors>
+  <redirecttoremovefileextension>False</redirecttoremovefileextension>
+  <numberofreferrerdays>1</numberofreferrerdays>
+  <postoptionscustomfields>False</postoptionscustomfields>
+  <searchbuttontext>Search</searchbuttontext>
+  <enableoptimization>False</enableoptimization>
+  <avatar>wavatar</avatar>
+  <iscocommentenabled>False</iscocommentenabled>
+  <enablepingbacksend>True</enablepingbacksend>
+  <htmlheader />
+  <postoptionsslug>False</postoptionsslug>
+  <enablepingbackreceive>True</enablepingbackreceive>
+  <showdescriptioninpostlist>False</showdescriptioninpostlist>
+  <removeextensionsfromurls>True</removeextensionsfromurls>
+  <endorsement>https://blogengine.io/syndication.axd</endorsement>
+  <enablepasswordreset>True</enablepasswordreset>
+  <smtpserverport>25</smtpserverport>
+  <searchdefaulttext>Enter search term or APML url</searchdefaulttext>
+  <smtpserver>mail.example.com</smtpserver>
+  <name>test</name>
+  <geocodinglatitude>0</geocodinglatitude>
+  <handlewwwsubdomain />
+  <disquswebsitename />
+  <facebookappid />
+  <enablereferrertracking>False</enablereferrertracking>
+  <enablehttpcompression>False</enablehttpcompression>
+  <iscommentnestingenabled>True</iscommentnestingenabled>
+  <smtppassword>password</smtppassword>
+  <blogrollupdateminutes>60</blogrollupdateminutes>
+</settings>
